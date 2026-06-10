@@ -196,14 +196,7 @@ function renderDashboard() {
   const mesFilter = document.getElementById('filterMes').value;
 
   // NPS global del filtro actual
-  const semanaFilter2 = document.getElementById('filterSemana').value;
   const npsActual = calcNPS(filtered);
-  const npsToShow = semanaFilter2 ? npsActual : npsUltima;
-  const npsPrevToShow = semanaFilter2 ? (function(){
-    const semanasAll = unique(allData.map(r=>r.semana));
-    const idx = semanasAll.indexOf(semanaFilter2);
-    return idx > 0 ? calcNPS(allData.filter(r=>r.semana===semanasAll[idx-1])) : null;
-  })() : npsAnterior;
 
   // NPS por semana (todos los datos, sin filtro de semana)
   const baseForSemana = mesFilter
@@ -229,6 +222,15 @@ function renderDashboard() {
   const npsUltima = lastIdx >= 0 ? npsPorSemana[lastIdx].nps : null;
   const npsAnterior = lastIdx >= 1 ? npsPorSemana[lastIdx - 1].nps : null;
   const deltaSemana = (npsUltima !== null && npsAnterior !== null) ? npsUltima - npsAnterior : null;
+
+  // NPS a mostrar en tarjeta (semana seleccionada o última)
+  const semanaFilter2 = document.getElementById('filterSemana').value;
+  const npsToShow = semanaFilter2 ? npsActual : npsUltima;
+  const npsPrevToShow = semanaFilter2 ? (function(){
+    const semanasAll = unique(allData.map(r=>r.semana));
+    const idx = semanasAll.indexOf(semanaFilter2);
+    return idx > 0 ? calcNPS(allData.filter(r=>r.semana===semanasAll[idx-1])) : null;
+  })() : npsAnterior;
 
   // Ultimo mes vs anterior
   const lastMesIdx = npsPorMes.length - 1;

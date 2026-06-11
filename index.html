@@ -4,61 +4,116 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NPS Rappi — Riders</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:#000 url("bg.jpg") center center / cover no-repeat fixed;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f0ede8;min-height:100vh;padding:2rem;}
-  .dash{max-width:1100px;margin:0 auto;}
-  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
-  .topbar-left h1{font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;}
-  .topbar-left p{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;}
-  .topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-  select{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;padding:7px 12px;border-radius:10px;cursor:pointer;outline:none;backdrop-filter:blur(10px);}
-  select:hover{border-color:rgba(255,255,255,0.25);}
-  .refresh-btn{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;padding:7px 12px;border-radius:10px;cursor:pointer;backdrop-filter:blur(10px);}
-  .refresh-btn:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
-  .loading{display:flex;align-items:center;justify-content:center;height:300px;color:rgba(255,255,255,0.3);font-size:14px;gap:10px;}
-  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.1);border-top-color:#FF6840;border-radius:50%;animation:spin .7s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .glass{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:16px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
-  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-  .metric{padding:1.25rem 1.5rem;}
-  .metric-label{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
-  .metric-value{font-size:32px;font-weight:600;color:#fff;line-height:1;}
-  .nps-big{color:#FF6840;}
-  .metric-delta{font-size:11px;margin-top:10px;}
-  .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:500;}
-  .up{background:rgba(93,202,165,0.15);color:#5DCAA5;border:0.5px solid rgba(93,202,165,0.2);}
-  .down{background:rgba(240,149,149,0.15);color:#F09595;border:0.5px solid rgba(240,149,149,0.2);}
-  .neutral{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);border:0.5px solid rgba(255,255,255,0.1);}
-  .metric-sub{font-size:11px;color:rgba(255,255,255,0.25);margin-top:5px;}
-  .dist-row{display:flex;gap:3px;height:6px;border-radius:10px;overflow:hidden;margin:10px 0 8px;}
-  .dist-bar{height:100%;transition:width .5s;}
-  .dist-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.35);}
-  .dist-item{display:flex;align-items:center;gap:4px;}
-  .dot{width:6px;height:6px;border-radius:50%;}
-  .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-  .card{padding:1.25rem;}
-  .card-title{font-size:11px;font-weight:500;color:rgba(255,255,255,0.4);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.5px;}
-  .comments-card{padding:1.25rem;margin-top:12px;}
-  .comments-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-  .comment{padding:12px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);}
-  .comment:last-child{border-bottom:none;}
-  .comment-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px;}
-  .comment-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.85);}
-  .comment-meta{display:flex;gap:6px;align-items:center;}
-  .week-tag{font-size:10px;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.08);}
-  .score-tag{font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;}
-  .promotor{background:rgba(93,202,165,0.12);color:#5DCAA5;border:0.5px solid rgba(93,202,165,0.2);}
-  .pasivo{background:rgba(239,159,39,0.12);color:#EF9F27;border:0.5px solid rgba(239,159,39,0.2);}
-  .detractor{background:rgba(240,149,149,0.12);color:#F09595;border:0.5px solid rgba(240,149,149,0.2);}
-  .comment-text{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;}
-  .no-comments{font-size:13px;color:rgba(255,255,255,0.2);padding:1.5rem 0;text-align:center;}
-  @media(max-width:600px){.metrics{grid-template-columns:1fr 1fr;}.charts-row{grid-template-columns:1fr;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#050505;color:#f0ede8;}
+
+/* HERO */
+.hero{position:relative;height:100vh;min-height:600px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('riders.jpg') center 40%/cover no-repeat;filter:blur(2px) brightness(0.38);transform:scale(1.05);}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.4) 45%,rgba(0,0,0,0.97) 100%);}
+.hero-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:48px 56px;}
+.eyebrow{font-size:11px;color:rgba(255,255,255,0.38);letter-spacing:5px;text-transform:uppercase;margin-bottom:14px;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,8vw,100px);color:#fff;line-height:0.88;letter-spacing:3px;}
+.hero-divider{width:48px;height:2px;background:#FF4713;margin:18px 0;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,0.32);font-weight:300;letter-spacing:0.5px;margin-bottom:16px;}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.hp{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;font-size:11px;color:rgba(255,255,255,0.42);}
+.hp b{color:#FF6840;font-weight:600;}
+.scroll-hint{font-size:9px;color:rgba(255,255,255,0.18);margin-top:12px;letter-spacing:2px;text-transform:uppercase;}
+
+/* DASHBOARD */
+.dashboard{background:#050505;min-height:100vh;position:relative;overflow:hidden;}
+.dash-bg-words{position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:flex-start;padding:8px;opacity:0.038;pointer-events:none;overflow:hidden;}
+.dw{font-size:28px;font-weight:700;color:#fff;white-space:nowrap;padding:6px 16px;letter-spacing:0.5px;}
+
+.topbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.06);background:rgba(5,5,5,0.8);backdrop-filter:blur(20px);}
+.topbar-left h1{font-size:16px;font-weight:500;color:#f0ede8;}
+.topbar-left p{font-size:11px;color:rgba(255,255,255,0.3);margin-top:3px;}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+select{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:11px;padding:7px 12px;border-radius:9px;cursor:pointer;outline:none;backdrop-filter:blur(8px);font-family:'Inter',sans-serif;}
+select:hover{border-color:rgba(255,255,255,0.22);}
+.refresh-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:11px;padding:7px 12px;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;}
+
+.main-content{position:relative;z-index:2;padding:12px;}
+
+.loading{display:flex;align-items:center;justify-content:center;height:300px;color:rgba(255,255,255,0.3);font-size:13px;gap:10px;}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.08);border-top-color:#FF6840;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* GLASS CARDS */
+.glass{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
+
+/* BENTO */
+.bento{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.metric{padding:18px 20px;}
+.metric-label{font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;}
+.metric-value{font-size:36px;font-weight:700;color:#FF6840;line-height:1;}
+.metric-value.white{color:#fff;}
+.metric-delta{font-size:10px;margin-top:10px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:7px;font-size:10px;font-weight:500;}
+.up{background:rgba(93,202,165,0.1);color:#5DCAA5;border:0.5px solid rgba(93,202,165,0.2);}
+.down{background:rgba(240,149,149,0.1);color:#F09595;border:0.5px solid rgba(240,149,149,0.2);}
+.neutral{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);border:0.5px solid rgba(255,255,255,0.1);}
+.metric-sub{font-size:10px;color:rgba(255,255,255,0.2);margin-top:5px;}
+
+.dist-card{padding:16px 20px;margin-bottom:8px;}
+.card-title{font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:12px;}
+.dist-row{display:flex;gap:3px;height:5px;border-radius:10px;overflow:hidden;margin:8px 0 7px;}
+.dist-bar{height:100%;}
+.dist-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.3);}
+.dist-item{display:flex;align-items:center;gap:5px;}
+.dot{width:6px;height:6px;border-radius:50%;}
+
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.chart-card{padding:16px 20px;}
+
+.comments-card{padding:16px 20px;}
+.comments-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.comment{padding:12px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.comment:last-child{border-bottom:none;}
+.comment-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px;}
+.comment-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.82);}
+.comment-meta{display:flex;gap:6px;align-items:center;}
+.week-tag{font-size:10px;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.08);}
+.score-tag{font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;}
+.promotor{background:rgba(93,202,165,0.1);color:#5DCAA5;border:0.5px solid rgba(93,202,165,0.18);}
+.pasivo{background:rgba(239,159,39,0.1);color:#EF9F27;border:0.5px solid rgba(239,159,39,0.18);}
+.detractor{background:rgba(240,149,149,0.1);color:#F09595;border:0.5px solid rgba(240,149,149,0.18);}
+.comment-text{font-size:12px;color:rgba(255,255,255,0.38);line-height:1.6;}
+.no-comments{font-size:13px;color:rgba(255,255,255,0.2);padding:2rem 0;text-align:center;}
+
+@media(max-width:700px){
+  .hero-content{padding:32px 24px;}
+  .bento{grid-template-columns:1fr 1fr;}
+  .charts-row{grid-template-columns:1fr;}
+  .topbar{flex-direction:column;align-items:flex-start;gap:10px;}
+}
 </style>
 </head>
 <body>
-<div class="dash">
+
+<!-- PANTALLA 1: HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-ov"></div>
+  <div class="hero-content">
+    <div class="eyebrow">Mobi × Rappi Turbo · 2026</div>
+    <div class="hero-title">ENCUESTA DE<br>SATISFACCIÓN</div>
+    <div class="hero-divider"></div>
+    <div class="hero-sub">Resultados semanales de experiencia · Riders</div>
+    <div class="hero-pills" id="hero-pills">
+      <div class="hp">Cargando datos...</div>
+    </div>
+    <div class="scroll-hint">↓ ver resultados</div>
+  </div>
+</section>
+
+<!-- PANTALLA 2: DASHBOARD -->
+<section class="dashboard">
+  <div class="dash-bg-words" id="bg-words"></div>
 
   <div class="topbar">
     <div class="topbar-left">
@@ -78,284 +133,37 @@
     </div>
   </div>
 
-  <div id="main-content">
-    <div class="loading"><div class="spinner"></div> Cargando datos del Sheet...</div>
+  <div class="main-content" id="main-content">
+    <div class="loading"><div class="spinner"></div> Cargando datos...</div>
   </div>
+</section>
 
-</div>
+
 
 <script>
-const API_KEY = 'AIzaSyCfJCB4yMMLh2eGNtEAjOFzV-rgUnkEMw4';
-const SHEET_ID = '1ZXzreW_JA0xXP67_nxslVwlRWLD7FK2KoyUAePs4Zas';
-const SHEET_NAME = encodeURIComponent('NPS MAR/3 26');
-
-let allData = [];
-let chartSemanal = null;
-let chartMensual = null;
-
-function getNPSType(score) {
-  const s = parseFloat(score);
-  if (isNaN(s)) return null;
-  if (s >= 9) return 'promotor';
-  if (s >= 7) return 'pasivo';
-  return 'detractor';
+// Fill bg words
+const bgEl = document.getElementById('bg-words');
+for(let i=0;i<60;i++){
+  ['mobi','RappiTurbo'].forEach(w=>{
+    const s=document.createElement('span');
+    s.className='dw'; s.textContent=w; bgEl.appendChild(s);
+  });
 }
 
-function calcNPS(rows) {
-  const valid = rows.map(r => parseFloat(r._scoreRappi)).filter(s => !isNaN(s));
-  if (!valid.length) return null;
-  const pct_p = valid.filter(s => s >= 9).length / valid.length * 100;
-  const pct_d = valid.filter(s => s <= 6).length / valid.length * 100;
-  return Math.round(pct_p - pct_d);
-}
-
-function unique(arr) {
-  return [...new Set(arr)].filter(Boolean).sort();
-}
-
-async function loadData() {
-  document.getElementById('main-content').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando datos del Sheet...</div>';
-  chartSemanal = null; chartMensual = null;
-
-  try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'Error ' + res.status);
-    }
-    const json = await res.json();
-    const rows = json.values;
-    if (!rows || rows.length < 2) throw new Error('Sin datos en el Sheet');
-
-    allData = rows.slice(1).map(r => ({
-      nombre: (r[0] || '').trim(),
-      _scoreRappi: (r[23] || '').trim(),
-      comentario: (r[24] || '').trim(),
-      semana: (r[25] || '').trim(),
-      mes: (r[22] || '').trim(),
-      tipo: getNPSType((r[23] || '').trim())
-    })).filter(r => r._scoreRappi !== '' && r.semana !== '');
-
-    const semanas = unique(allData.map(r => r.semana));
-    const meses = unique(allData.map(r => r.mes));
-    const selS = document.getElementById('filterSemana');
-    const selM = document.getElementById('filterMes');
-    selS.innerHTML = '<option value="">Todas las semanas</option>' + semanas.map(s => `<option value="${s}">${s}</option>`).join('');
-    selM.innerHTML = '<option value="">Todos los meses</option>' + meses.map(m => `<option value="${m}">${m}</option>`).join('');
-
-    const lastSemana = semanas[semanas.length - 1];
-    document.getElementById('subtitle').textContent = `Encuesta semanal · ${allData.length} respuestas · ultima semana: ${lastSemana}`;
-
-    renderDashboard();
-
-    ['filterSemana','filterMes','filterTipo'].forEach(id => {
-      document.getElementById(id).onchange = renderDashboard;
-    });
-
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="loading" style="color:#F09595;">Error: ${e.message}</div>`;
-  }
-}
-
-function getFiltered() {
-  const semana = document.getElementById('filterSemana').value;
-  const mes = document.getElementById('filterMes').value;
-  const tipo = document.getElementById('filterTipo').value;
-  return allData.filter(r =>
-    (!semana || r.semana === semana) &&
-    (!mes || r.mes === mes) &&
-    (!tipo || r.tipo === tipo)
-  );
-}
-
-function renderDashboard() {
-  const filtered = getFiltered();
-  const semanaFilter = document.getElementById('filterSemana').value;
-  const mesFilter = document.getElementById('filterMes').value;
-
-  // NPS global del filtro actual
-  const npsActual = calcNPS(filtered);
-
-  // NPS por semana (todos los datos, sin filtro de semana)
-  const baseForSemana = mesFilter
-    ? allData.filter(r => r.mes === mesFilter)
-    : allData;
-  const semanas = unique(baseForSemana.map(r => r.semana));
-  const npsPorSemana = semanas.map(s => ({
-    semana: s,
-    nps: calcNPS(baseForSemana.filter(r => r.semana === s)),
-    n: baseForSemana.filter(r => r.semana === s).length
-  }));
-
-  // NPS por mes
-  const meses = unique(allData.map(r => r.mes));
-  const npsPorMes = meses.map(m => ({
-    mes: m,
-    nps: calcNPS(allData.filter(r => r.mes === m)),
-    n: allData.filter(r => r.mes === m).length
-  }));
-
-  // Última semana NPS vs anterior
-  const lastIdx = npsPorSemana.length - 1;
-  const npsUltima = lastIdx >= 0 ? npsPorSemana[lastIdx].nps : null;
-  const npsAnterior = lastIdx >= 1 ? npsPorSemana[lastIdx - 1].nps : null;
-  const deltaSemana = (npsUltima !== null && npsAnterior !== null) ? npsUltima - npsAnterior : null;
-
-  // NPS a mostrar en tarjeta (semana seleccionada o última)
-  const semanaFilter2 = document.getElementById('filterSemana').value;
-  const npsToShow = semanaFilter2 ? npsActual : npsUltima;
-  const npsPrevToShow = semanaFilter2 ? (function(){
-    const semanasAll = unique(allData.map(r=>r.semana));
-    const idx = semanasAll.indexOf(semanaFilter2);
-    return idx > 0 ? calcNPS(allData.filter(r=>r.semana===semanasAll[idx-1])) : null;
-  })() : npsAnterior;
-
-  // Ultimo mes vs anterior
-  const lastMesIdx = npsPorMes.length - 1;
-  const npsUltimoMes = lastMesIdx >= 0 ? npsPorMes[lastMesIdx].nps : null;
-  const npsAnteriorMes = lastMesIdx >= 1 ? npsPorMes[lastMesIdx - 1].nps : null;
-  const deltaMes = (npsUltimoMes !== null && npsAnteriorMes !== null) ? npsUltimoMes - npsAnteriorMes : null;
-
-  // Distribución
-  const total = filtered.length;
-  const pP = total ? Math.round(filtered.filter(r => r.tipo === 'promotor').length / total * 100) : 0;
-  const pN = total ? Math.round(filtered.filter(r => r.tipo === 'pasivo').length / total * 100) : 0;
-  const pD = total ? Math.round(filtered.filter(r => r.tipo === 'detractor').length / total * 100) : 0;
-
-  // Comentarios con texto
-  const conComentario = filtered.filter(r => r.comentario && r.comentario.length > 2);
-
-  const deltaHTML = (d, prev, label) => {
-    if (d === null || prev === null) return `<span class="badge neutral">sin dato previo</span>`;
-    const diff = d - prev;
-    const pct = prev !== 0 ? Math.round(Math.abs(diff) / Math.abs(prev) * 100) : 0;
-    if (diff > 0) return `<span class="badge up">▲ ${pct}% ${label}</span><div class="metric-sub">Semana anterior: ${prev}</div>`;
-    if (diff < 0) return `<span class="badge down">▼ ${pct}% ${label}</span><div class="metric-sub">Semana anterior: ${prev}</div>`;
-    return `<span class="badge neutral">= sin cambio</span><div class="metric-sub">Semana anterior: ${prev}</div>`;
-  };
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="metrics">
-      <div class="metric">
-        <div class="metric-label">NPS Semanal</div>
-        <div class="metric-value nps-big">${npsToShow !== null ? npsToShow : '—'}</div>
-        <div class="metric-delta">${deltaHTML(npsToShow, npsPrevToShow, 'vs sem. ant.')}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">NPS promedio del mes</div>
-        <div class="metric-value nps-big">${npsUltimoMes !== null ? npsUltimoMes : '—'}</div>
-        <div class="metric-delta">${deltaHTML(npsUltimoMes, npsAnteriorMes, 'vs mes ant.')}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Respuestas totales</div>
-        <div class="metric-value">${total}</div>
-        <div class="metric-delta">
-          <span style="color:#5DCAA5;">${pP}% promotores</span> ·
-          <span style="color:#EF9F27;">${pN}% pasivos</span> ·
-          <span style="color:#F09595;">${pD}% detractores</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="glass" style="padding:1.25rem;margin-bottom:12px;">
-      <div class="card-title">Distribución de respuestas</div>
-      <div class="dist-row">
-        <div class="dist-bar" style="width:${pP}%;background:#5DCAA5;"></div>
-        <div class="dist-bar" style="width:${pN}%;background:#EF9F27;"></div>
-        <div class="dist-bar" style="width:${pD}%;background:#F09595;"></div>
-      </div>
-      <div class="dist-labels">
-        <div class="dist-item"><span class="dot" style="background:#5DCAA5;"></span> Promotores ${pP}%</div>
-        <div class="dist-item"><span class="dot" style="background:#EF9F27;"></span> Pasivos ${pN}%</div>
-        <div class="dist-item"><span class="dot" style="background:#F09595;"></span> Detractores ${pD}%</div>
-      </div>
-    </div>
-
-    <div class="charts-row">
-      <div class="card">
-        <div class="card-title">NPS por semana</div>
-        <div style="position:relative;height:180px;">
-          <canvas id="chartSemanal" role="img" aria-label="NPS de Rappi por semana"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">NPS promedio mensual</div>
-        <div style="position:relative;height:180px;">
-          <canvas id="chartMensual" role="img" aria-label="NPS mensual de Rappi"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="glass comments-card">
-      <div class="comments-header">
-        <div style="font-size:12px;font-weight:500;color:#aaa;">Comentarios de riders <span style="color:#555;font-weight:400;">(${conComentario.length})</span></div>
-      </div>
-      <div id="comentarios-list">
-        ${conComentario.length === 0
-          ? '<div class="no-comments">Sin comentarios para este filtro</div>'
-          : conComentario.map(r => `
-            <div class="comment">
-              <div class="comment-top">
-                <span class="comment-name">${r.nombre || 'Rider'}</span>
-                <div class="comment-meta">
-                  <span class="score-tag ${r.tipo}">${r.tipo === 'promotor' ? 'Promotor' : r.tipo === 'pasivo' ? 'Pasivo' : 'Detractor'} · ${r._scoreRappi}</span>
-                  <span class="week-tag">${r.semana}</span>
-                </div>
-              </div>
-              <div class="comment-text">${r.comentario}</div>
-            </div>`).join('')}
-      </div>
-    </div>
+// Update hero pills after data loads
+const origLoadData = loadData;
+const _origRender = renderDashboard;
+renderDashboard = function(){
+  _origRender.apply(this,arguments);
+  const semanas = [...new Set(allData.map(r=>r.semana))].filter(Boolean).sort();
+  const lastSem = semanas[semanas.length-1];
+  const nps = calcNPS(allData.filter(r=>r.semana===lastSem));
+  document.getElementById('hero-pills').innerHTML = `
+    <div class="hp"><b>${allData.length}</b> respuestas</div>
+    <div class="hp">Última sem. <b>${lastSem||'—'}</b></div>
+    <div class="hp">NPS <b>${nps!==null?nps:'—'}</b></div>
   `;
-
-  // Charts
-  const gridColor = 'rgba(255,255,255,0.05)';
-  const tickColor = '#555';
-  const baseOpts = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: {
-      backgroundColor: '#1e1e1c', titleColor: '#ccc', bodyColor: '#888',
-      borderColor: '#333', borderWidth: 0.5, padding: 10
-    }},
-    scales: {
-      x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
-      y: { min: -100, max: 100, grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, stepSize: 50 },
-           title: { display: false } }
-    }
-  };
-
-  chartSemanal = new Chart(document.getElementById('chartSemanal'), {
-    type: 'line',
-    data: {
-      labels: npsPorSemana.map(d => d.semana),
-      datasets: [{
-        data: npsPorSemana.map(d => d.nps),
-        borderColor: '#FF6840',
-        backgroundColor: 'rgba(255,104,64,0.07)',
-        fill: true, tension: 0.35,
-        pointRadius: 4, pointBackgroundColor: '#FF6840',
-        borderWidth: 2
-      }]
-    },
-    options: baseOpts
-  });
-
-  chartMensual = new Chart(document.getElementById('chartMensual'), {
-    type: 'bar',
-    data: {
-      labels: npsPorMes.map(d => d.mes),
-      datasets: [{
-        data: npsPorMes.map(d => d.nps),
-        backgroundColor: npsPorMes.map((d, i) => i === npsPorMes.length - 1 ? '#FF6840' : '#2a2a28'),
-        borderRadius: 4, borderSkipped: false
-      }]
-    },
-    options: { ...baseOpts }
-  });
-}
-
-loadData();
+};
 </script>
 </body>
 </html>
